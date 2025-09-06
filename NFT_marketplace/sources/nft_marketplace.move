@@ -36,29 +36,22 @@ module ws_sui::nft_marketplace {
     public fun buy<T: key + store>(
         listing: &mut Listing<T>,
         payment: Coin<SUI>,
-        ctx: &mut TxContext // Cần thiết để Sui runtime biết gửi NFT (T) trả về cho ai
+        ctx: &mut TxContext
     ): T {
         assert!(coin::value(&payment) == listing.price_in_sui, EWrongPrice);
 
-        // 2. Thanh toán: Chuyển SUI cho người bán
         transfer::public_transfer(payment, listing.seller);
 
         let nft = std::option::extract(&mut listing.object);
-
-        // 4. Trả về NFT (T) cho người gọi (ctx.sender)
         nft
     }
-ư
+
     public fun delist<T: key + store>(
-        listing: &mut Listing<T>, // Phải là &mut vì Listing là shared object
+        listing: &mut Listing<T>, 
         ctx: &mut TxContext
     ): T {
-        // 1. Chỉ người bán (seller) mới có quyền hủy niêm yết
         let caller = tx_context::sender(ctx);
         assert!(listing.seller == caller, ENotSeller);
-
-        // 2. Lấy NFT ra (logic tương tự như 'buy')
-        // Tự động kiểm tra xem có ai đã mua chưa.
         let nft = std::option::extract(&mut listing.object);
 
         nft
